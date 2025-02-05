@@ -3,7 +3,7 @@ package com.thodoris.kotoufos.vehicleservicelog.data.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "vehicles")
 data class Vehicle(
     @PrimaryKey val id: Int,
 
