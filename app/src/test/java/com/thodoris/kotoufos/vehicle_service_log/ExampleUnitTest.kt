@@ -1,4 +1,4 @@
-package com.thodoris.kotoufos.vehicleservicelog
+package com.thodoris.kotoufos.vehicle_service_log
 
 import org.junit.Test
 

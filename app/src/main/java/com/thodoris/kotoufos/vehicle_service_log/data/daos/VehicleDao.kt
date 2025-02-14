@@ -1,4 +1,4 @@
-package com.thodoris.kotoufos.vehicleservicelog.data.daos
+package com.thodoris.kotoufos.vehicle_service_log.data.daos
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.thodoris.kotoufos.vehicleservicelog.data.models.Vehicle
+import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 
 @Dao
 interface VehicleDao {

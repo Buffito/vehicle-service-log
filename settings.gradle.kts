@@ -19,5 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VehicleServiceLog"
+rootProject.name = "vehicle-service-log"
 include(":app")
+ 

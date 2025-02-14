@@ -1,4 +1,4 @@
-package com.thodoris.kotoufos.vehicleservicelog.data.models
+package com.thodoris.kotoufos.vehicle_service_log.data.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

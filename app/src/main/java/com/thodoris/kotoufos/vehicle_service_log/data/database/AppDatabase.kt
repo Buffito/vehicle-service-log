@@ -1,11 +1,11 @@
-package com.thodoris.kotoufos.vehicleservicelog.data.database
+package com.thodoris.kotoufos.vehicle_service_log.data.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.thodoris.kotoufos.vehicleservicelog.data.daos.VehicleDao
-import com.thodoris.kotoufos.vehicleservicelog.data.models.Vehicle
+import com.thodoris.kotoufos.vehicle_service_log.data.daos.VehicleDao
+import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 
 @Database(entities = [Vehicle::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {

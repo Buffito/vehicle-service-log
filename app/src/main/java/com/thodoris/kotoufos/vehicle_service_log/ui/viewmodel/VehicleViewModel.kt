@@ -1,13 +1,13 @@
-package com.thodoris.kotoufos.vehicleservicelog.ui.viewmodel
+package com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thodoris.kotoufos.vehicleservicelog.data.daos.VehicleDao
-import com.thodoris.kotoufos.vehicleservicelog.data.models.Vehicle
+import com.thodoris.kotoufos.vehicle_service_log.data.daos.VehicleDao
+import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 import kotlinx.coroutines.launch
 
-class VehicleViewModel(private val vehicleDao: VehicleDao ) : ViewModel() {
+class VehicleViewModel(private val vehicleDao: VehicleDao) : ViewModel() {
     val allVehicles : LiveData<List<Vehicle>> = vehicleDao.getAllVehicles()
 
     fun insert(vehicle: Vehicle){
