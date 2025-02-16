@@ -35,7 +35,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.thodoris.kotoufos.vehicle_service_log.data.database.AppDatabase
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
-import com.thodoris.kotoufos.vehicle_service_log.repository.VehicleRepository
 import com.thodoris.kotoufos.vehicle_service_log.ui.theme.VehicleservicelogTheme
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModelFactory
@@ -66,26 +65,43 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-        },
+        topBar = { },
         content = { paddingValues ->
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(vehicles) { vehicle ->
-                    Text(vehicle.model)
-                }
-            }
+                Text(text = "Vehicle List", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-            Button(
-                onClick = { navController.navigate("add_vehicle") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Go to Add Vehicle")
+                LazyColumn(
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    items(vehicles) { vehicle ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(text = "Model: ${vehicle.model}", fontWeight = FontWeight.Bold)
+                            Text(text = "Licence Plate: ${vehicle.licencePlate}")
+                            Text(text = "Type: ${vehicle.type}")
+                            Text(text = "Active: ${if (vehicle.active) "Yes" else "No"}")
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = { navController.navigate("add_vehicle") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Go to Add Vehicle")
+
+                }
             }
         }
     )
@@ -99,11 +115,9 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
     var type by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-
-        },
+        topBar = { },
         content = { paddingValues ->
             Column(
                 modifier = Modifier

@@ -23,19 +23,19 @@ class VehicleViewModel(private val repository: VehicleRepository) : ViewModel() 
         }
     }
 
-    fun insert(vehicle: Vehicle){
+    fun insert(vehicle: Vehicle) {
         viewModelScope.launch {
             repository.insert(vehicle)
         }
     }
 
-    fun update(vehicle: Vehicle){
+    fun update(vehicle: Vehicle) {
         viewModelScope.launch {
             repository.update(vehicle)
         }
     }
 
-    fun delete(vehicle: Vehicle){
+    fun delete(vehicle: Vehicle) {
         viewModelScope.launch {
             repository.delete(vehicle)
         }
