@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,9 +111,19 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
                 onClick = { navController.navigate("add_vehicle") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             ) {
                 Text("Go to Add Vehicle")
+
+            }
+
+            Button(
+                onClick = { navController.navigate("add_service") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+            ) {
+                Text("Go to Add Service")
 
             }
         }
@@ -129,7 +138,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
     var model by remember { mutableStateOf("") }
     var licencePlate by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
-    var active by remember { mutableStateOf(false) }
+    val active by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
@@ -168,6 +177,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                             Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
                         }
                     })
+
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     vehicleTypes.forEach { option ->
                         DropdownMenuItem(text = { Text(option.name) }, onClick = {
@@ -201,11 +211,28 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
 }
 
 @Composable
+fun AddServiceScreen(navController: NavHostController){
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Test", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+        }
+    })
+}
+
+@Composable
 fun AppNavHost(viewModel: VehicleViewModel) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "main") {
         composable("main") { VehicleFormScreen(viewModel, navController) }
         composable("add_vehicle") { AddVehicleScreen(viewModel, navController) }
+        composable("add_service") { AddServiceScreen(navController) }
     }
 }

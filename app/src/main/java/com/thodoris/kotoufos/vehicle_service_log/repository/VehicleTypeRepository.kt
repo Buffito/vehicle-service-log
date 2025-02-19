@@ -7,7 +7,15 @@ import kotlinx.coroutines.flow.Flow
 class VehicleTypeRepository(private val vehicleTypeDao: VehicleTypeDao) {
     val allVehicleTypes: Flow<List<VehicleType>> = vehicleTypeDao.getAllTypes()
 
-    suspend fun insert(vehicleType: VehicleType) {
+    suspend fun insertVehicleType(vehicleType: VehicleType) {
         vehicleTypeDao.insert(vehicleType)
+    }
+
+    suspend fun updateVehicleType(vehicleType: VehicleType) {
+        vehicleTypeDao.update(vehicleType)
+    }
+
+    suspend fun deleteVehicleType(vehicleType: VehicleType) {
+        vehicleTypeDao.delete(vehicleType)
     }
 }

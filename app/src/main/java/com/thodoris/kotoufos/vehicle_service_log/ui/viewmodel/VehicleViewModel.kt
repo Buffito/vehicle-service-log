@@ -32,25 +32,37 @@ class VehicleViewModel(
 
     fun insertVehicle(vehicle: Vehicle) {
         viewModelScope.launch {
-            vehicleRepository.insert(vehicle)
+            vehicleRepository.insertVehicle(vehicle)
         }
     }
 
     fun updateVehicle(vehicle: Vehicle) {
         viewModelScope.launch {
-            vehicleRepository.update(vehicle)
+            vehicleRepository.updateVehicle(vehicle)
         }
     }
 
     fun deleteVehicle(vehicle: Vehicle) {
         viewModelScope.launch {
-            vehicleRepository.delete(vehicle)
+            vehicleRepository.deleteVehicle(vehicle)
         }
     }
 
     fun insertVehicleType(vehicleType: VehicleType) {
         viewModelScope.launch {
-            vehicleTypeRepository.insert(vehicleType)
+            vehicleTypeRepository.insertVehicleType(vehicleType)
+        }
+    }
+
+    fun updateVehicleType(vehicleType: VehicleType) {
+        viewModelScope.launch {
+            vehicleTypeRepository.updateVehicleType(vehicleType)
+        }
+    }
+
+    fun deleteVehicleType(vehicleType: VehicleType) {
+        viewModelScope.launch {
+            vehicleTypeRepository.deleteVehicleType(vehicleType)
         }
     }
 }
