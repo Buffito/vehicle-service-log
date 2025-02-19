@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostController) {
-    val vehicles by viewModel.allVehicles.collectAsState()
+    val vehicles by viewModel.allVehicles.collectAsState(emptyList())
 
     // Not how it should be done, but good for now
     viewModel.insertVehicleType(VehicleType(name = "Car"))
@@ -98,8 +98,10 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
                             .fillMaxWidth()
                             .padding(8.dp)
                     ) {
-                        Text(text = "Model: ${vehicle.make}", fontWeight = FontWeight.Bold)
-                        Text(text = "Model: ${vehicle.model}", fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "Vehicle: ${vehicle.make} ${vehicle.model}",
+                            fontWeight = FontWeight.Bold
+                        )
                         Text(text = "Licence Plate: ${vehicle.licencePlate}")
                         Text(text = "Type: ${vehicle.type}")
                         Text(text = "Active: ${if (vehicle.active) "Yes" else "No"}")
@@ -211,7 +213,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
 }
 
 @Composable
-fun AddServiceScreen(navController: NavHostController){
+fun AddServiceScreen(navController: NavHostController) {
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
             modifier = Modifier

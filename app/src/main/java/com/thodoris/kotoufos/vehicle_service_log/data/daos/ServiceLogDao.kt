@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ServiceLogDao {
     @Query("SELECT * FROM service_logs WHERE vehicleId = :vehicleId")
-    fun getAllServiceLogsForCar(vehicleId: Int): Flow<List<ServiceLog>>
+    fun getAllServiceLogsForVehicle(vehicleId: Int): Flow<List<ServiceLog>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(serviceLog: ServiceLog)
