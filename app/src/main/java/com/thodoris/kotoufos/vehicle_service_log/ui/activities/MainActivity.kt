@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -28,10 +33,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -40,30 +47,23 @@ import androidx.navigation.compose.rememberNavController
 import com.thodoris.kotoufos.vehicle_service_log.data.database.AppDatabase
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 import com.thodoris.kotoufos.vehicle_service_log.data.models.VehicleType
+import com.thodoris.kotoufos.vehicle_service_log.repository.ServiceLogRepository
 import com.thodoris.kotoufos.vehicle_service_log.repository.VehicleRepository
 import com.thodoris.kotoufos.vehicle_service_log.repository.VehicleTypeRepository
 import com.thodoris.kotoufos.vehicle_service_log.ui.theme.VehicleservicelogTheme
+import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewModel
+import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewModelFactory
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val database = AppDatabase.getDatabase(this)
-        val vehicleDao = database.vehicleDao()
-        val vehicleTypeDao = database.vehicleTypeDao()
-
-        val vehicleRepository = VehicleRepository(vehicleDao)
-        val vehicleTypeRepository = VehicleTypeRepository(vehicleTypeDao)
-
         enableEdgeToEdge()
         setContent {
             VehicleservicelogTheme {
-                val vehicleViewModel: VehicleViewModel = viewModel(
-                    factory = VehicleViewModelFactory(vehicleRepository, vehicleTypeRepository)
-                )
-                AppNavHost(vehicleViewModel)
+                AppNavHost(database)
             }
         }
     }
@@ -93,19 +93,9 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
                 modifier = Modifier.weight(1f, fill = false)
             ) {
                 items(vehicles) { vehicle ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "Vehicle: ${vehicle.make} ${vehicle.model}",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(text = "Licence Plate: ${vehicle.licencePlate}")
-                        Text(text = "Type: ${vehicle.type}")
-                        Text(text = "Active: ${if (vehicle.active) "Yes" else "No"}")
-                    }
+                    VehicleItem(vehicle = vehicle, onClick = {
+                        navController.navigate("service_log/${vehicle.id}")
+                    })
                 }
             }
 
@@ -115,17 +105,7 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             ) {
-                Text("Go to Add Vehicle")
-
-            }
-
-            Button(
-                onClick = { navController.navigate("add_service") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp)
-            ) {
-                Text("Go to Add Service")
+                Text("Add Vehicle")
 
             }
         }
@@ -140,7 +120,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
     var model by remember { mutableStateOf("") }
     var licencePlate by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
-    val active by remember { mutableStateOf(false) }
+    var active by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
@@ -180,7 +160,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                         }
                     })
 
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.zIndex(1f)) {
                     vehicleTypes.forEach { option ->
                         DropdownMenuItem(text = { Text(option.name) }, onClick = {
                             type = option.name
@@ -188,6 +168,14 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                         })
                     }
                 }
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { active = !active }) {
+                Checkbox(checked = active, onCheckedChange = { active = it })
+                Text(text = "Active")
             }
 
             Button(
@@ -213,7 +201,9 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
 }
 
 @Composable
-fun AddServiceScreen(navController: NavHostController) {
+fun ServiceLogScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navController: NavHostController) {
+    val serviceLogs by viewModel.allServiceLogsForVehicle(vehicleId).collectAsState(emptyList())
+
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
             modifier = Modifier
@@ -222,19 +212,102 @@ fun AddServiceScreen(navController: NavHostController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Test", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Service Log", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+            LazyColumn(
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
+                items(serviceLogs) { log ->
+                    //TODO: Add log stuff
+                }
+            }
+
+            Button(
+                onClick = { navController.navigate("add_service${vehicleId}") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+            ) {
+                Text("Add Service")
+
+            }
+        }
+    })
+}
+
+@Composable
+fun AddServiceScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navController: NavHostController) {
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Add Service", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
         }
     })
 }
 
 @Composable
-fun AppNavHost(viewModel: VehicleViewModel) {
+fun AppNavHost(database: AppDatabase) {
+
+    val vehicleDao = database.vehicleDao()
+    val vehicleTypeDao = database.vehicleTypeDao()
+
+    val vehicleRepository = VehicleRepository(vehicleDao)
+    val vehicleTypeRepository = VehicleTypeRepository(vehicleTypeDao)
+
+    val vehicleViewModel: VehicleViewModel = viewModel(
+        factory = VehicleViewModelFactory(vehicleRepository, vehicleTypeRepository)
+    )
+
+    val serviceLogDao = database.serviceLogDao()
+    val serviceLogRepository = ServiceLogRepository(serviceLogDao)
+    val serviceLogViewModel: ServiceLogViewModel = viewModel(
+        factory = ServiceLogViewModelFactory(serviceLogRepository)
+    )
+
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "main") {
-        composable("main") { VehicleFormScreen(viewModel, navController) }
-        composable("add_vehicle") { AddVehicleScreen(viewModel, navController) }
-        composable("add_service") { AddServiceScreen(navController) }
+        composable("main") { VehicleFormScreen(vehicleViewModel, navController) }
+        composable("add_vehicle") { AddVehicleScreen(vehicleViewModel, navController) }
+        composable("service_log/{vehicleId}") { backStackEntry ->
+            val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
+            if (vehicleId != null) {
+                ServiceLogScreen(vehicleId, serviceLogViewModel, navController)
+            }
+        }
+        composable("add_service/{vehicleId}") { backStackEntry ->
+            val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
+            if (vehicleId != null) {
+                AddServiceScreen(vehicleId, serviceLogViewModel, navController)
+            }
+        }
+    }
+}
+
+@Composable
+fun VehicleItem(vehicle: Vehicle, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onClick() }, // Handle click event
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "${vehicle.make} ${vehicle.model}",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(text = "Licence Plate: ${vehicle.licencePlate}", fontSize = 14.sp)
+            Text(text = "Type: ${vehicle.type}", fontSize = 14.sp)
+            Text(text = "Active: ${if (vehicle.active) "Yes" else "No"}", fontSize = 14.sp)
+        }
     }
 }
