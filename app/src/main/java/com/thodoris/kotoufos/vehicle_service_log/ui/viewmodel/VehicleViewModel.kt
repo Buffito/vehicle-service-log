@@ -17,6 +17,10 @@ class VehicleViewModel(
     val allVehicles: Flow<List<Vehicle>> = vehicleRepository.allVehicles
     val allVehicleTypes: Flow<List<VehicleType>> = vehicleTypeRepository.allVehicleTypes
 
+    fun vehicleById(vehicleId: Int): Flow<Vehicle> {
+        return vehicleRepository.getVehicleById(vehicleId)
+    }
+
     fun insertVehicle(vehicle: Vehicle) {
         viewModelScope.launch {
             vehicleRepository.insertVehicle(vehicle)

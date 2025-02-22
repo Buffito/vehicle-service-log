@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ServiceLogViewModel(private val serviceLogRepository: ServiceLogRepository) : ViewModel() {
-
     fun allServiceLogsForVehicle(vehicleId: Int): Flow<List<ServiceLog>> =
         serviceLogRepository.allVehicleServiceLogs(vehicleId)
 

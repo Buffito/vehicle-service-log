@@ -1,5 +1,6 @@
 package com.thodoris.kotoufos.vehicle_service_log.ui.activities
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,11 +12,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -45,6 +52,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.thodoris.kotoufos.vehicle_service_log.data.database.AppDatabase
+import com.thodoris.kotoufos.vehicle_service_log.data.models.ServiceLog
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 import com.thodoris.kotoufos.vehicle_service_log.data.models.VehicleType
 import com.thodoris.kotoufos.vehicle_service_log.repository.ServiceLogRepository
@@ -55,6 +63,7 @@ import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewMode
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewModelFactory
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModelFactory
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -160,7 +169,11 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                         }
                     })
 
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.zIndex(1f)) {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.zIndex(1f)
+                ) {
                     vehicleTypes.forEach { option ->
                         DropdownMenuItem(text = { Text(option.name) }, onClick = {
                             type = option.name
@@ -201,8 +214,18 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
 }
 
 @Composable
-fun ServiceLogScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navController: NavHostController) {
+fun ServiceLogScreen(
+    vehicleId: Int,
+    viewModel: ServiceLogViewModel,
+    vehicleViewModel: VehicleViewModel,
+    navController: NavHostController
+) {
     val serviceLogs by viewModel.allServiceLogsForVehicle(vehicleId).collectAsState(emptyList())
+
+    val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
+    val vehicleText: String =
+        (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
+            ?: "") + ")"
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
@@ -212,18 +235,39 @@ fun ServiceLogScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navControll
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Service Log", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Service Log for $vehicleText",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
 
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = false)
             ) {
                 items(serviceLogs) { log ->
-                    //TODO: Add log stuff
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = vehicleText, fontSize = 18.sp, fontWeight = FontWeight.Bold
+                            )
+
+                            Text(text = "Service Type: ${log.type}", fontSize = 14.sp)
+                            Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
+                            Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
+                            Text(text = "Vehicle Mileage: ${log.mileage}", fontSize = 14.sp)
+                            Text(text = "Service Description: ${log.description}", fontSize = 14.sp)
+                        }
+                    }
                 }
             }
 
             Button(
-                onClick = { navController.navigate("add_service${vehicleId}") },
+                onClick = { navController.navigate("add_service/${vehicleId}") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp)
@@ -236,7 +280,37 @@ fun ServiceLogScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navControll
 }
 
 @Composable
-fun AddServiceScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navController: NavHostController) {
+fun AddServiceScreen(
+    vehicleId: Int,
+    serviceLogViewModel: ServiceLogViewModel,
+    vehicleViewModel: VehicleViewModel,
+    navController: NavHostController
+) {
+    val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
+    val vehicleText: String =
+        (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
+            ?: "") + ")"
+
+    var serviceType by remember { mutableStateOf("") }
+    var serviceDate by remember { mutableStateOf("") }
+    var shop by remember { mutableStateOf("") }
+    var vehicleMileage by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val selectedDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
+            serviceDate = selectedDate
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
             modifier = Modifier
@@ -245,8 +319,73 @@ fun AddServiceScreen(vehicleId: Int, viewModel: ServiceLogViewModel, navControll
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Add Service", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Add Service for $vehicleText",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
 
+            OutlinedTextField(value = serviceType,
+                onValueChange = { serviceType = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Service Type") })
+
+            OutlinedTextField(value = serviceDate,
+                onValueChange = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { datePickerDialog.show() },
+                label = { Text("Service Date") },
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { datePickerDialog.show() }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                    }
+                })
+
+            OutlinedTextField(value = shop,
+                onValueChange = { shop = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Shop") })
+
+            OutlinedTextField(value = vehicleMileage,
+                onValueChange = { vehicleMileage = it },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
+                ),
+                label = { Text("Vehicle Mileage") })
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp),
+                label = { Text("Description") },
+                maxLines = 5,
+                singleLine = false,
+            )
+
+            Button(
+                onClick = {
+                    if (serviceType.isNotEmpty() && serviceDate.isNotEmpty() && shop.isNotEmpty() && vehicleMileage.isNotEmpty()) {
+                        val newLog = ServiceLog(
+                            vehicleId = vehicleId,
+                            type = serviceType,
+                            date = serviceDate,
+                            shop = shop,
+                            mileage = vehicleMileage.toInt(),
+                            description = description
+                        )
+                        serviceLogViewModel.insertServiceLog(newLog)
+                    }
+
+                    navController.navigate("service_log/${vehicleId}")
+                }, modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save to Log")
+            }
         }
     })
 }
@@ -278,13 +417,13 @@ fun AppNavHost(database: AppDatabase) {
         composable("service_log/{vehicleId}") { backStackEntry ->
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
             if (vehicleId != null) {
-                ServiceLogScreen(vehicleId, serviceLogViewModel, navController)
+                ServiceLogScreen(vehicleId, serviceLogViewModel, vehicleViewModel, navController)
             }
         }
         composable("add_service/{vehicleId}") { backStackEntry ->
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
             if (vehicleId != null) {
-                AddServiceScreen(vehicleId, serviceLogViewModel, navController)
+                AddServiceScreen(vehicleId, serviceLogViewModel, vehicleViewModel, navController)
             }
         }
     }
@@ -296,7 +435,7 @@ fun VehicleItem(vehicle: Vehicle, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { onClick() }, // Handle click event
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
