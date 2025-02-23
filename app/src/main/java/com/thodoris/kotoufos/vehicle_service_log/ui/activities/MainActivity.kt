@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,8 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
@@ -26,8 +30,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,10 +45,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -83,12 +91,19 @@ class MainActivity : ComponentActivity() {
 fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostController) {
     val vehicles by viewModel.allVehicles.collectAsState(emptyList())
 
-    // Not how it should be done, but good for now
-    viewModel.insertVehicleType(VehicleType(name = "Car"))
-    viewModel.insertVehicleType(VehicleType(name = "Motorcycle"))
-    viewModel.insertVehicleType(VehicleType(name = "Truck"))
-
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("add_vehicle") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = CircleShape
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Vehicle")
+            }
+        },
+        content = { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,6 +116,23 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = false)
             ) {
+                if (vehicles.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No vehicle in list.",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+
+                        )
+                    }
+
+                    return@LazyColumn
+                }
+
                 items(vehicles) { vehicle ->
                     VehicleItem(vehicle = vehicle, onClick = {
                         navController.navigate("service_log/${vehicle.id}")
@@ -108,15 +140,6 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
                 }
             }
 
-            Button(
-                onClick = { navController.navigate("add_vehicle") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            ) {
-                Text("Add Vehicle")
-
-            }
         }
     })
 }
@@ -132,6 +155,11 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
     var active by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
 
+    // Not how it should be done, but good for now
+    viewModel.insertVehicleType(VehicleType(name = "Car"))
+    viewModel.insertVehicleType(VehicleType(name = "Motorcycle"))
+    viewModel.insertVehicleType(VehicleType(name = "Truck"))
+
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
             modifier = Modifier
@@ -145,7 +173,7 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
             OutlinedTextField(value = make,
                 onValueChange = { make = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Model") })
+                label = { Text("Make") })
 
             OutlinedTextField(value = model,
                 onValueChange = { model = it },
@@ -157,17 +185,34 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Licence Plate") })
 
-            Box {
-                OutlinedTextField(value = type,
-                    onValueChange = { },
-                    label = { Text("Type") },
-                    readOnly = true,
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { expanded = true }
+                    .border(
+                        width = 1.dp,
+                        color = Color.DarkGray,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
-                        }
-                    })
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = type.ifEmpty { "Select Type" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.DarkGray
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = "Dropdown",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
 
                 DropdownMenu(
                     expanded = expanded,
@@ -175,13 +220,17 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                     modifier = Modifier.zIndex(1f)
                 ) {
                     vehicleTypes.forEach { option ->
-                        DropdownMenuItem(text = { Text(option.name) }, onClick = {
-                            type = option.name
-                            expanded = false
-                        })
+                        DropdownMenuItem(
+                            text = { Text(option.name) },
+                            onClick = {
+                                type = option.name
+                                expanded = false
+                            }
+                        )
                     }
                 }
             }
+
 
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -227,7 +276,18 @@ fun ServiceLogScreen(
         (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
             ?: "") + ")"
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize(),
+        topBar = { },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("add_service/${vehicleId}") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = CircleShape
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Service Log")
+            }
+        },
+        content = { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -244,6 +304,23 @@ fun ServiceLogScreen(
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = false)
             ) {
+                if (serviceLogs.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No service logs in list.",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center
+
+                        )
+                    }
+
+                    return@LazyColumn
+                }
+
                 items(serviceLogs) { log ->
                     Card(
                         modifier = Modifier
@@ -256,7 +333,6 @@ fun ServiceLogScreen(
                                 text = vehicleText, fontSize = 18.sp, fontWeight = FontWeight.Bold
                             )
 
-                            Text(text = "Service Type: ${log.type}", fontSize = 14.sp)
                             Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
                             Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
                             Text(text = "Vehicle Mileage: ${log.mileage}", fontSize = 14.sp)
@@ -266,15 +342,6 @@ fun ServiceLogScreen(
                 }
             }
 
-            Button(
-                onClick = { navController.navigate("add_service/${vehicleId}") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            ) {
-                Text("Add Service")
-
-            }
         }
     })
 }
@@ -291,7 +358,6 @@ fun AddServiceScreen(
         (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
             ?: "") + ")"
 
-    var serviceType by remember { mutableStateOf("") }
     var serviceDate by remember { mutableStateOf("") }
     var shop by remember { mutableStateOf("") }
     var vehicleMileage by remember { mutableStateOf("") }
@@ -325,23 +391,31 @@ fun AddServiceScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(value = serviceType,
-                onValueChange = { serviceType = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Service Type") })
-
-            OutlinedTextField(value = serviceDate,
-                onValueChange = {},
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { datePickerDialog.show() },
-                label = { Text("Service Date") },
-                readOnly = true,
-                trailingIcon = {
+                    .clickable { datePickerDialog.show() }
+                    .border(
+                        width = 1.dp,
+                        color = Color.Gray,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = serviceDate.ifEmpty { "Select Date" },
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     IconButton(onClick = { datePickerDialog.show() }) {
                         Icon(Icons.Default.DateRange, contentDescription = "Select Date")
                     }
-                })
+                }
+            }
 
             OutlinedTextField(value = shop,
                 onValueChange = { shop = it },
@@ -369,10 +443,9 @@ fun AddServiceScreen(
 
             Button(
                 onClick = {
-                    if (serviceType.isNotEmpty() && serviceDate.isNotEmpty() && shop.isNotEmpty() && vehicleMileage.isNotEmpty()) {
+                    if (serviceDate.isNotEmpty() && shop.isNotEmpty() && vehicleMileage.isNotEmpty()) {
                         val newLog = ServiceLog(
                             vehicleId = vehicleId,
-                            type = serviceType,
                             date = serviceDate,
                             shop = shop,
                             mileage = vehicleMileage.toInt(),

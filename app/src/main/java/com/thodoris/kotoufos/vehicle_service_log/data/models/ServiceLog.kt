@@ -20,7 +20,6 @@ data class ServiceLog(
     val date: String,
     val shop: String,
     val mileage: Int,
-    val type: String,
     val description: String
 )
 
