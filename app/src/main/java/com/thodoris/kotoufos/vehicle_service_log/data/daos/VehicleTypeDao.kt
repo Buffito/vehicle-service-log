@@ -14,6 +14,10 @@ interface VehicleTypeDao {
     @Query("SELECT * FROM vehicle_types")
     fun getAllTypes(): Flow<List<VehicleType>>
 
+    @Query("SELECT COUNT(*) FROM vehicle_types")
+    suspend fun getCount(): Int
+
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(vehicleType: VehicleType)
 

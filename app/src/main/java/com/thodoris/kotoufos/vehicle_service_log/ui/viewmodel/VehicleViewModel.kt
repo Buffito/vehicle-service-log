@@ -56,6 +56,17 @@ class VehicleViewModel(
             vehicleTypeRepository.deleteVehicleType(vehicleType)
         }
     }
+
+    fun addDefaultVehicleTypes() {
+        viewModelScope.launch {
+            val count = vehicleTypeRepository.getVehicleTypeCount()
+            if (count == 0) {
+                vehicleTypeRepository.insertVehicleType(VehicleType(name = "Car"))
+                vehicleTypeRepository.insertVehicleType(VehicleType(name = "Motorcycle"))
+                vehicleTypeRepository.insertVehicleType(VehicleType(name = "Truck"))
+            }
+        }
+    }
 }
 
 class VehicleViewModelFactory(

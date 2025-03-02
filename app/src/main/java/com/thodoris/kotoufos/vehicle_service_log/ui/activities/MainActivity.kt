@@ -2,6 +2,7 @@ package com.thodoris.kotoufos.vehicle_service_log.ui.activities
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,6 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,7 +41,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,22 +94,19 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostController) {
-    val vehicles by viewModel.allVehicles.collectAsState(emptyList())
+fun VehiclesScreen(vehicleViewModel: VehicleViewModel, navController: NavHostController) {
+    val vehicles by vehicleViewModel.allVehicles.collectAsState(emptyList())
+    vehicleViewModel.addDefaultVehicleTypes()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = { },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("add_vehicle") },
-                containerColor = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Vehicle")
-            }
-        },
-        content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = { navController.navigate("vehicle/-1") },
+            containerColor = MaterialTheme.colorScheme.primary,
+            shape = CircleShape
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Vehicle")
+        }
+    }, content = { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -135,7 +138,7 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
 
                 items(vehicles) { vehicle ->
                     VehicleItem(vehicle = vehicle, onClick = {
-                        navController.navigate("service_log/${vehicle.id}")
+                        navController.navigate("vehicle_info/${vehicle.id}")
                     })
                 }
             }
@@ -145,20 +148,11 @@ fun VehicleFormScreen(viewModel: VehicleViewModel, navController: NavHostControl
 }
 
 @Composable
-fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostController) {
-    val vehicleTypes by viewModel.allVehicleTypes.collectAsState(emptyList())
-
-    var make by remember { mutableStateOf("") }
-    var model by remember { mutableStateOf("") }
-    var licencePlate by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("") }
-    var active by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(false) }
-
-    // Not how it should be done, but good for now
-    viewModel.insertVehicleType(VehicleType(name = "Car"))
-    viewModel.insertVehicleType(VehicleType(name = "Motorcycle"))
-    viewModel.insertVehicleType(VehicleType(name = "Truck"))
+fun VehicleInfoScreen(
+    vehicleId: Int, vehicleViewModel: VehicleViewModel, navController: NavHostController
+) {
+    val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
+    var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
         Column(
@@ -168,35 +162,145 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Add New Vehicle", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Vehicle Information", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
-            OutlinedTextField(value = make,
-                onValueChange = { make = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Make") })
-
-            OutlinedTextField(value = model,
-                onValueChange = { model = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Model") })
-
-            OutlinedTextField(value = licencePlate,
-                onValueChange = { licencePlate = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Licence Plate") })
-
-            Box(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .clickable { expanded = true }
-                    .border(
-                        width = 1.dp,
-                        color = Color.DarkGray,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(16.dp)
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "${vehicle?.make} ${vehicle?.model}",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(text = "Licence Plate: ${vehicle?.licencePlate}", fontSize = 14.sp)
+                        Text(text = "Type: ${vehicle?.type}", fontSize = 14.sp)
+                        Text(
+                            text = "Active: ${if (vehicle?.active == true) "Yes" else "No"}",
+                            fontSize = 14.sp
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(onClick = { navController.navigate("vehicle/${vehicle?.id}") }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                        }
+                        IconButton(onClick = { showDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
+                    }
+                }
+            }
+
+            Button(
+                onClick = {
+                    navController.navigate("service_log/${vehicle?.id}")
+                }, modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Check Service Logs")
+            }
+        }
+    })
+
+    if (showDialog) {
+        AlertDialog(onDismissRequest = { showDialog = false },
+            title = { Text("Delete Vehicle") },
+            text = { Text("Are you sure you want to delete this vehicle?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    vehicle?.let {
+                        vehicleViewModel.deleteVehicle(it)
+                        navController.popBackStack()
+                    }
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            })
+    }
+}
+
+
+@Composable
+fun InsertUpdateVehicleScreen(
+    vehicleId: Int, vehicleViewModel: VehicleViewModel, navController: NavHostController
+) {
+    val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
+    val vehicleTypes by vehicleViewModel.allVehicleTypes.collectAsState(emptyList())
+
+    var make by remember { mutableStateOf("") }
+    var model by remember { mutableStateOf("") }
+    var licencePlate by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+
+    LaunchedEffect(vehicle) {
+        if (vehicle != null) {
+            make = vehicle!!.make
+            model = vehicle!!.model
+            licencePlate = vehicle!!.licencePlate
+            type = vehicle!!.type
+            active = vehicle!!.active
+        }
+    }
+
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = if (vehicleId == -1) "Add New Vehicle" else "Edit Vehicle",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            OutlinedTextField(
+                value = make,
+                onValueChange = { make = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Make") }
+            )
+
+            OutlinedTextField(
+                value = model,
+                onValueChange = { model = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Model") }
+            )
+
+            OutlinedTextField(
+                value = licencePlate,
+                onValueChange = { licencePlate = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Licence Plate") }
+            )
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .clickable { expanded = true }
+                .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp))
+                .padding(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -207,35 +311,28 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.DarkGray
                     )
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Dropdown",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
+                    Icon(Icons.Default.ArrowDropDown, "Dropdown")
                 }
 
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.zIndex(1f)
+                    onDismissRequest = { expanded = false }
                 ) {
                     vehicleTypes.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option.name) },
-                            onClick = {
-                                type = option.name
-                                expanded = false
-                            }
-                        )
+                        DropdownMenuItem(text = { Text(option.name) }, onClick = {
+                            type = option.name
+                            expanded = false
+                        })
                     }
                 }
             }
 
-
-            Row(verticalAlignment = Alignment.CenterVertically,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { active = !active }) {
+                    .clickable { active = !active }
+            ) {
                 Checkbox(checked = active, onCheckedChange = { active = it })
                 Text(text = "Active")
             }
@@ -244,23 +341,32 @@ fun AddVehicleScreen(viewModel: VehicleViewModel, navController: NavHostControll
                 onClick = {
                     if (make.isNotEmpty() && model.isNotEmpty() && licencePlate.isNotEmpty() && type.isNotEmpty()) {
                         val newVehicle = Vehicle(
+                            id = if (vehicleId == -1) 0 else vehicleId,
                             make = make,
                             model = model,
                             licencePlate = licencePlate,
                             type = type,
                             active = active
                         )
-                        viewModel.insertVehicle(newVehicle)
-                    }
 
-                    navController.navigate("main")
-                }, modifier = Modifier.fillMaxWidth()
+                        if (vehicleId == -1) {
+                            vehicleViewModel.insertVehicle(newVehicle)
+                        } else {
+                            vehicleViewModel.updateVehicle(newVehicle)
+                        }
+
+                        navController.popBackStack()
+
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save Vehicle")
+                Text(if (vehicleId == -1) "Save Vehicle" else "Update Vehicle")
             }
         }
     })
 }
+
 
 @Composable
 fun ServiceLogScreen(
@@ -276,18 +382,15 @@ fun ServiceLogScreen(
         (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
             ?: "") + ")"
 
-    Scaffold(modifier = Modifier.fillMaxSize(),
-        topBar = { },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("add_service/${vehicleId}") },
-                containerColor = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Service Log")
-            }
-        },
-        content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = { navController.navigate("add_service/${vehicleId}") },
+            containerColor = MaterialTheme.colorScheme.primary,
+            shape = CircleShape
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Service Log")
+        }
+    }, content = { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -336,7 +439,9 @@ fun ServiceLogScreen(
                             Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
                             Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
                             Text(text = "Vehicle Mileage: ${log.mileage}", fontSize = 14.sp)
-                            Text(text = "Service Description: ${log.description}", fontSize = 14.sp)
+                            Text(
+                                text = "Service Description: ${log.description}", fontSize = 14.sp
+                            )
                         }
                     }
                 }
@@ -391,17 +496,13 @@ fun AddServiceScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { datePickerDialog.show() }
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)
-            ) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .clickable { datePickerDialog.show() }
+                .border(
+                    width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
+                )
+                .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -483,10 +584,20 @@ fun AppNavHost(database: AppDatabase) {
     )
 
     val navController = rememberNavController()
-
     NavHost(navController = navController, startDestination = "main") {
-        composable("main") { VehicleFormScreen(vehicleViewModel, navController) }
-        composable("add_vehicle") { AddVehicleScreen(vehicleViewModel, navController) }
+        composable("main") { VehiclesScreen(vehicleViewModel, navController) }
+        composable("vehicle/{vehicleId}") { backStackEntry ->
+            val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
+            if (vehicleId != null) {
+                InsertUpdateVehicleScreen(vehicleId, vehicleViewModel, navController)
+            }
+        }
+        composable("vehicle_info/{vehicleId}") { backStackEntry ->
+            val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
+            if (vehicleId != null) {
+                VehicleInfoScreen(vehicleId, vehicleViewModel, navController)
+            }
+        }
         composable("service_log/{vehicleId}") { backStackEntry ->
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
             if (vehicleId != null) {
@@ -517,9 +628,6 @@ fun VehicleItem(vehicle: Vehicle, onClick: () -> Unit) {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(text = "Licence Plate: ${vehicle.licencePlate}", fontSize = 14.sp)
-            Text(text = "Type: ${vehicle.type}", fontSize = 14.sp)
-            Text(text = "Active: ${if (vehicle.active) "Yes" else "No"}", fontSize = 14.sp)
         }
     }
 }
