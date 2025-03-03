@@ -8,6 +8,10 @@ class ServiceLogRepository(private val serviceLogDao: ServiceLogDao) {
     fun allVehicleServiceLogs(vehicleId: Int): Flow<List<ServiceLog>> =
         serviceLogDao.getAllServiceLogsForVehicle(vehicleId)
 
+    fun getServiceById(logId: Int): Flow<ServiceLog> {
+        return serviceLogDao.getLogById(logId)
+    }
+
     suspend fun insertServiceLog(serviceLog: ServiceLog) {
         serviceLogDao.insert(serviceLog)
     }

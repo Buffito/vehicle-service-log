@@ -14,6 +14,9 @@ interface ServiceLogDao {
     @Query("SELECT * FROM service_logs WHERE vehicleId = :vehicleId")
     fun getAllServiceLogsForVehicle(vehicleId: Int): Flow<List<ServiceLog>>
 
+    @Query("SELECT * FROM service_logs WHERE id = :logId LIMIT 1")
+    fun getLogById(logId: Int): Flow<ServiceLog>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(serviceLog: ServiceLog)
 

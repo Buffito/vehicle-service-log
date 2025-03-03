@@ -2,7 +2,6 @@ package com.thodoris.kotoufos.vehicle_service_log.ui.activities
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -54,12 +53,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -68,7 +65,6 @@ import androidx.navigation.compose.rememberNavController
 import com.thodoris.kotoufos.vehicle_service_log.data.database.AppDatabase
 import com.thodoris.kotoufos.vehicle_service_log.data.models.ServiceLog
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
-import com.thodoris.kotoufos.vehicle_service_log.data.models.VehicleType
 import com.thodoris.kotoufos.vehicle_service_log.repository.ServiceLogRepository
 import com.thodoris.kotoufos.vehicle_service_log.repository.VehicleRepository
 import com.thodoris.kotoufos.vehicle_service_log.repository.VehicleTypeRepository
@@ -129,7 +125,6 @@ fun VehiclesScreen(vehicleViewModel: VehicleViewModel, navController: NavHostCon
                             fontSize = 16.sp,
                             color = Color.Gray,
                             textAlign = TextAlign.Center
-
                         )
                     }
 
@@ -141,7 +136,20 @@ fun VehiclesScreen(vehicleViewModel: VehicleViewModel, navController: NavHostCon
                         navController.navigate("vehicle_info/${vehicle.id}")
                     })
                 }
+
+                item {
+                    Text(
+                        text = "Tip: Press on a vehicle to view additional information!",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
+
 
         }
     })
@@ -274,26 +282,20 @@ fun InsertUpdateVehicleScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(
-                value = make,
+            OutlinedTextField(value = make,
                 onValueChange = { make = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Make") }
-            )
+                label = { Text("Make") })
 
-            OutlinedTextField(
-                value = model,
+            OutlinedTextField(value = model,
                 onValueChange = { model = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Model") }
-            )
+                label = { Text("Model") })
 
-            OutlinedTextField(
-                value = licencePlate,
+            OutlinedTextField(value = licencePlate,
                 onValueChange = { licencePlate = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Licence Plate") }
-            )
+                label = { Text("Licence Plate") })
 
             Box(modifier = Modifier
                 .fillMaxWidth()
@@ -314,10 +316,7 @@ fun InsertUpdateVehicleScreen(
                     Icon(Icons.Default.ArrowDropDown, "Dropdown")
                 }
 
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     vehicleTypes.forEach { option ->
                         DropdownMenuItem(text = { Text(option.name) }, onClick = {
                             type = option.name
@@ -327,12 +326,10 @@ fun InsertUpdateVehicleScreen(
                 }
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { active = !active }
-            ) {
+                    .clickable { active = !active }) {
                 Checkbox(checked = active, onCheckedChange = { active = it })
                 Text(text = "Active")
             }
@@ -358,8 +355,7 @@ fun InsertUpdateVehicleScreen(
                         navController.popBackStack()
 
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }, modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (vehicleId == -1) "Save Vehicle" else "Update Vehicle")
             }
@@ -384,7 +380,7 @@ fun ServiceLogScreen(
 
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, floatingActionButton = {
         FloatingActionButton(
-            onClick = { navController.navigate("add_service/${vehicleId}") },
+            onClick = { navController.navigate("service/-1/${vehicleId}") },
             containerColor = MaterialTheme.colorScheme.primary,
             shape = CircleShape
         ) {
@@ -425,25 +421,21 @@ fun ServiceLogScreen(
                 }
 
                 items(serviceLogs) { log ->
-                    Card(
+                    ServiceLogItem(log = log, onClick = {
+                        navController.navigate("service_info/${log.id}")
+                    })
+                }
+
+                item {
+                    Text(
+                        text = "Tip: Press on a log to view additional information!",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        elevation = CardDefaults.cardElevation(4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = vehicleText, fontSize = 18.sp, fontWeight = FontWeight.Bold
-                            )
-
-                            Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
-                            Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
-                            Text(text = "Vehicle Mileage: ${log.mileage}", fontSize = 14.sp)
-                            Text(
-                                text = "Service Description: ${log.description}", fontSize = 14.sp
-                            )
-                        }
-                    }
+                            .padding(16.dp),
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
@@ -452,16 +444,18 @@ fun ServiceLogScreen(
 }
 
 @Composable
-fun AddServiceScreen(
+fun InsertUpdateServiceScreen(
     vehicleId: Int,
+    serviceId: Int,
     serviceLogViewModel: ServiceLogViewModel,
     vehicleViewModel: VehicleViewModel,
     navController: NavHostController
 ) {
     val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
+    val service by serviceLogViewModel.logById(serviceId).collectAsState(initial = null)
+
     val vehicleText: String =
-        (vehicle?.make ?: "") + " " + (vehicle?.model ?: "") + "(" + (vehicle?.licencePlate
-            ?: "") + ")"
+        "${vehicle?.make ?: ""} ${vehicle?.model ?: ""} (${vehicle?.licencePlate ?: ""})"
 
     var serviceDate by remember { mutableStateOf("") }
     var shop by remember { mutableStateOf("") }
@@ -474,15 +468,23 @@ fun AddServiceScreen(
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
-            val selectedDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
-            serviceDate = selectedDate
+            serviceDate = String.format("%02d/%02d/%04d", dayOfMonth, month + 1, year)
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+    LaunchedEffect(service) {
+        if (service != null) {
+            serviceDate = service!!.date
+            shop = service!!.shop
+            vehicleMileage = service!!.mileage.toString()
+            description = service!!.description
+        }
+    }
+
+    Scaffold(modifier = Modifier.fillMaxSize(), content = { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -491,7 +493,7 @@ fun AddServiceScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Add Service for $vehicleText",
+                text = if (serviceId == -1) "Add Service for $vehicleText" else "Edit Service for $vehicleText",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -499,22 +501,15 @@ fun AddServiceScreen(
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .clickable { datePickerDialog.show() }
-                .border(
-                    width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(4.dp)
-                )
-                .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp)) {
+                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                .padding(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = serviceDate.ifEmpty { "Select Date" },
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    IconButton(onClick = { datePickerDialog.show() }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Select Date")
-                    }
+                    Text(serviceDate.ifEmpty { "Select Date" })
+                    Icon(imageVector = Icons.Default.DateRange, contentDescription = "Select Date")
                 }
             }
 
@@ -526,9 +521,7 @@ fun AddServiceScreen(
             OutlinedTextField(value = vehicleMileage,
                 onValueChange = { vehicleMileage = it },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number, imeAction = ImeAction.Done
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 label = { Text("Vehicle Mileage") })
 
             OutlinedTextField(
@@ -538,30 +531,108 @@ fun AddServiceScreen(
                     .fillMaxWidth()
                     .height(150.dp),
                 label = { Text("Description") },
-                maxLines = 5,
-                singleLine = false,
+                maxLines = 5
             )
 
             Button(
                 onClick = {
                     if (serviceDate.isNotEmpty() && shop.isNotEmpty() && vehicleMileage.isNotEmpty()) {
-                        val newLog = ServiceLog(
+                        val log = ServiceLog(
+                            id = if (serviceId == -1) 0 else serviceId,
                             vehicleId = vehicleId,
                             date = serviceDate,
                             shop = shop,
                             mileage = vehicleMileage.toInt(),
                             description = description
                         )
-                        serviceLogViewModel.insertServiceLog(newLog)
-                    }
 
-                    navController.navigate("service_log/${vehicleId}")
+                        if (serviceId == -1) {
+                            serviceLogViewModel.insertServiceLog(log)
+                        } else {
+                            serviceLogViewModel.updateServiceLog(log)
+                        }
+                        navController.popBackStack()
+                    }
                 }, modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save to Log")
+                Text(if (serviceId == -1) "Save to Log" else "Update Log")
             }
         }
     })
+}
+
+
+@Composable
+fun ServiceInfoScreen(
+    logId: Int, serviceLogViewModel: ServiceLogViewModel, navController: NavHostController
+) {
+    val serviceLog by serviceLogViewModel.logById(logId).collectAsState(initial = null)
+    var showDialog by remember { mutableStateOf(false) }
+
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Vehicle Information", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(text = "Service Date: ${serviceLog?.date}", fontSize = 14.sp)
+                        Text(text = "Shop: ${serviceLog?.shop}", fontSize = 14.sp)
+                        Text(text = "Mileage: ${serviceLog?.mileage}", fontSize = 14.sp)
+                        Text(text = "Description: ${serviceLog?.description}", fontSize = 14.sp)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(onClick = { navController.navigate("vehicle/${serviceLog?.vehicleId}") }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit")
+                        }
+                        IconButton(onClick = { showDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        }
+                    }
+                }
+            }
+
+        }
+    })
+
+    if (showDialog) {
+        AlertDialog(onDismissRequest = { showDialog = false },
+            title = { Text("Delete Service Log") },
+            text = { Text("Are you sure you want to delete this log?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    serviceLog?.let {
+                        serviceLogViewModel.deleteServiceLog(it)
+                        navController.popBackStack()
+                    }
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            })
+    }
 }
 
 @Composable
@@ -604,10 +675,24 @@ fun AppNavHost(database: AppDatabase) {
                 ServiceLogScreen(vehicleId, serviceLogViewModel, vehicleViewModel, navController)
             }
         }
-        composable("add_service/{vehicleId}") { backStackEntry ->
+        composable("service/{serviceId}/{vehicleId}") { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId")?.toIntOrNull()
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
-            if (vehicleId != null) {
-                AddServiceScreen(vehicleId, serviceLogViewModel, vehicleViewModel, navController)
+
+            if ((vehicleId != null) && (serviceId != null)) {
+                InsertUpdateServiceScreen(
+                    vehicleId,
+                    serviceId,
+                    serviceLogViewModel,
+                    vehicleViewModel,
+                    navController
+                )
+            }
+        }
+        composable("service_info/{logId}") { backStackEntry ->
+            val logId = backStackEntry.arguments?.getString("logId")?.toIntOrNull()
+            if (logId != null) {
+                ServiceInfoScreen(logId, serviceLogViewModel, navController)
             }
         }
     }
@@ -628,6 +713,22 @@ fun VehicleItem(vehicle: Vehicle, onClick: () -> Unit) {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
+        }
+    }
+}
+
+@Composable
+fun ServiceLogItem(log: ServiceLog, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
+            Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
         }
     }
 }

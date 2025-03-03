@@ -12,6 +12,10 @@ class ServiceLogViewModel(private val serviceLogRepository: ServiceLogRepository
     fun allServiceLogsForVehicle(vehicleId: Int): Flow<List<ServiceLog>> =
         serviceLogRepository.allVehicleServiceLogs(vehicleId)
 
+    fun logById(logId: Int): Flow<ServiceLog> {
+        return serviceLogRepository.getServiceById(logId)
+    }
+
     fun insertServiceLog(serviceLog: ServiceLog) {
         viewModelScope.launch {
             serviceLogRepository.insertServiceLog(serviceLog)
