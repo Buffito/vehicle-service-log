@@ -80,4 +80,5 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     ksp(libs.androidx.room.compiler)
+
 }

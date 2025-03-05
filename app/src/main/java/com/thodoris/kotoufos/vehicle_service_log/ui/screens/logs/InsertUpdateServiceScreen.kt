@@ -52,8 +52,7 @@ fun InsertUpdateServiceScreen(
     val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
     val service by serviceLogViewModel.logById(serviceId).collectAsState(initial = null)
 
-    val vehicleText =
-        "${vehicle?.make ?: ""} ${vehicle?.model ?: ""} (${vehicle?.licencePlate ?: ""})"
+    val vehicleText = "${vehicle?.make ?: ""} ${vehicle?.model ?: ""}"
 
     var serviceDate by remember { mutableStateOf("") }
     var shop by remember { mutableStateOf("") }
