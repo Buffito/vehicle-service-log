@@ -3,8 +3,9 @@ package com.thodoris.kotoufos.vehicle_service_log.repository
 import com.thodoris.kotoufos.vehicle_service_log.data.daos.VehicleTypeDao
 import com.thodoris.kotoufos.vehicle_service_log.data.models.VehicleType
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class VehicleTypeRepository(private val vehicleTypeDao: VehicleTypeDao) {
+class VehicleTypeRepository @Inject constructor(private val vehicleTypeDao: VehicleTypeDao) {
     val allVehicleTypes: Flow<List<VehicleType>> = vehicleTypeDao.getAllTypes()
 
     suspend fun getVehicleTypeCount(): Int {
