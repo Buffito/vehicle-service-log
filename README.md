@@ -9,7 +9,23 @@ A simple Android app built with Jetpack Compose, Room, and MVVM architecture to 
 - Filter active vehicles.
 
 ## Screenshots
- - to be added
+### Home Screen
+![Home Screen](screenshots/home.png)
+
+### Add/Edit Vehicle Screen
+![Add/Edit Vehicle](screenshots/add_vehicle.png)
+
+### Vehicle Info Screen
+![Vehicle Info Screen](screenshots/vehicle_info.png)
+
+### Vehicle Logs Screen
+![Vehicle Logs Screen](screenshots/vehicle_logs.png)
+
+### Add/Edit Vehicle Log Screen
+![Add/Edit Vehicle Log Screen](screenshots/add_log.png)
+
+### Log Info Screen
+![Log Info Screen](screenshots/log_info.png)
 
 ## Installation
 1. Clone the repository:
