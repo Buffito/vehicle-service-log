@@ -9,6 +9,8 @@ A simple Android app built with Jetpack Compose, Room, and MVVM architecture to 
 - Filter active vehicles.
 
 ## Screenshots
+<details>
+  <summary>Click to expand</summary>
 ### Home Screen
 ![Home Screen](screenshots/home.png)
 
@@ -26,6 +28,7 @@ A simple Android app built with Jetpack Compose, Room, and MVVM architecture to 
 
 ### Log Info Screen
 ![Log Info Screen](screenshots/log_info.png)
+</details>
 
 ## Installation
 1. Clone the repository:
