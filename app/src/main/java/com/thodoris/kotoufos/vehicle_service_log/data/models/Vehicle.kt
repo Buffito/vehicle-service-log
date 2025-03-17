@@ -10,6 +10,5 @@ data class Vehicle(
     val make: String,
     val model: String,
     val licencePlate: String,
-    val type: String,
-    val active: Boolean
+    val type: String
 )

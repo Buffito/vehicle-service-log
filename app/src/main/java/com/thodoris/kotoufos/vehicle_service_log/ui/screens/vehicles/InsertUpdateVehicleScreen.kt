@@ -13,12 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
+import com.thodoris.kotoufos.vehicle_service_log.ui.components.InputField
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 
 @Composable
@@ -49,21 +48,17 @@ fun InsertUpdateVehicleScreen(
     var model by remember { mutableStateOf("") }
     var licencePlate by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
-    var active by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(vehicle) {
-        if (vehicle != null) {
-            make = vehicle!!.make
-            model = vehicle!!.model
-            licencePlate = vehicle!!.licencePlate
-            type = vehicle!!.type
-            active = vehicle!!.active
+        vehicle?.let {
+            make = it.make
+            model = it.model
+            licencePlate = it.licencePlate
+            type = it.type
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,20 +72,15 @@ fun InsertUpdateVehicleScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            OutlinedTextField(value = make,
-                onValueChange = { make = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Make") })
-
-            OutlinedTextField(value = model,
-                onValueChange = { model = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Model") })
-
-            OutlinedTextField(value = licencePlate,
+            InputField(value = make, onValueChange = { make = it }, label = "Make")
+            InputField(value = model, onValueChange = { model = it }, label = "Model")
+            InputField(
+                value = licencePlate,
                 onValueChange = { licencePlate = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Licence Plate") })
+                label = "Licence Plate"
+            )
+
+            var expanded by remember { mutableStateOf(false) }
 
             Box(modifier = Modifier
                 .fillMaxWidth()
@@ -121,14 +111,6 @@ fun InsertUpdateVehicleScreen(
                 }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { active = !active }) {
-                Checkbox(checked = active, onCheckedChange = { active = it })
-                Text(text = "Active")
-            }
-
             Button(
                 onClick = {
                     if (make.isNotEmpty() && model.isNotEmpty() && licencePlate.isNotEmpty() && type.isNotEmpty()) {
@@ -137,8 +119,7 @@ fun InsertUpdateVehicleScreen(
                             make = make,
                             model = model,
                             licencePlate = licencePlate,
-                            type = type,
-                            active = active
+                            type = type
                         )
 
                         if (vehicleId == -1) {
@@ -148,12 +129,11 @@ fun InsertUpdateVehicleScreen(
                         }
 
                         navController.popBackStack()
-
                     }
                 }, modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (vehicleId == -1) "Save Vehicle" else "Update Vehicle")
             }
         }
-    })
+    }
 }

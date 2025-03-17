@@ -9,15 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.thodoris.kotoufos.vehicle_service_log.data.models.ServiceLog
+import com.thodoris.kotoufos.vehicle_service_log.ui.components.InputField
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewModel
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 import java.util.Calendar
@@ -51,7 +49,6 @@ fun InsertUpdateServiceScreen(
 ) {
     val vehicle by vehicleViewModel.vehicleById(vehicleId).collectAsState(initial = null)
     val service by serviceLogViewModel.logById(serviceId).collectAsState(initial = null)
-
     val vehicleText = "${vehicle?.make ?: ""} ${vehicle?.model ?: ""}"
 
     var serviceDate by remember { mutableStateOf("") }
@@ -73,15 +70,15 @@ fun InsertUpdateServiceScreen(
     )
 
     LaunchedEffect(service) {
-        if (service != null) {
-            serviceDate = service!!.date
-            shop = service!!.shop
-            vehicleMileage = service!!.mileage.toString()
-            description = service!!.description
+        service?.let {
+            serviceDate = it.date
+            shop = it.shop
+            vehicleMileage = it.mileage.toString()
+            description = it.description
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -94,7 +91,6 @@ fun InsertUpdateServiceScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .clickable { datePickerDialog.show() }
@@ -110,26 +106,13 @@ fun InsertUpdateServiceScreen(
                 }
             }
 
-            OutlinedTextField(value = shop,
-                onValueChange = { shop = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Shop") })
-
-            OutlinedTextField(value = vehicleMileage,
-                onValueChange = { vehicleMileage = it },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                label = { Text("Vehicle Mileage") })
-
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                label = { Text("Description") },
-                maxLines = 5
-            )
+            InputField("Shop", shop) { shop = it }
+            InputField("Vehicle Mileage", vehicleMileage, KeyboardType.Number) {
+                vehicleMileage = it
+            }
+            InputField("Description", description, maxLines = 5, height = 150.dp) {
+                description = it
+            }
 
             Button(
                 onClick = {
@@ -155,5 +138,5 @@ fun InsertUpdateServiceScreen(
                 Text(if (serviceId == -1) "Save to Log" else "Update Log")
             }
         }
-    })
+    }
 }

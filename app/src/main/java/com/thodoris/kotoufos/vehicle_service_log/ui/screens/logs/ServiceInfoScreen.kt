@@ -9,14 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.thodoris.kotoufos.vehicle_service_log.ui.components.DeleteConfirmationDialog
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewModel
 
 @Composable
@@ -38,7 +35,7 @@ fun ServiceInfoScreen(
     val serviceLog by serviceLogViewModel.logById(logId).collectAsState(initial = null)
     var showDialog by remember { mutableStateOf(false) }
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = { }, content = { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -46,14 +43,8 @@ fun ServiceInfoScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Vehicle Information", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
+            Text(text = "Service Information", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            serviceLog?.let { log ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -62,13 +53,13 @@ fun ServiceInfoScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = "Service Date: ${serviceLog?.date}", fontSize = 14.sp)
-                        Text(text = "Shop: ${serviceLog?.shop}", fontSize = 14.sp)
-                        Text(text = "Mileage: ${serviceLog?.mileage}", fontSize = 14.sp)
-                        Text(text = "Description: ${serviceLog?.description}", fontSize = 14.sp)
+                        Text(text = "Service Date: ${log.date}", fontSize = 14.sp)
+                        Text(text = "Shop: ${log.shop}", fontSize = 14.sp)
+                        Text(text = "Mileage: ${log.mileage}", fontSize = 14.sp)
+                        Text(text = "Description: ${log.description}", fontSize = 14.sp)
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        IconButton(onClick = { navController.navigate("vehicle/${serviceLog?.vehicleId}") }) {
+                        IconButton(onClick = { navController.navigate("service/${log.id}/${log.vehicleId}") }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
                         IconButton(onClick = { showDialog = true }) {
@@ -77,29 +68,19 @@ fun ServiceInfoScreen(
                     }
                 }
             }
-
         }
-    })
+    }
 
     if (showDialog) {
-        AlertDialog(onDismissRequest = { showDialog = false },
-            title = { Text("Delete Service Log") },
-            text = { Text("Are you sure you want to delete this log?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                    serviceLog?.let {
-                        serviceLogViewModel.deleteServiceLog(it)
-                        navController.popBackStack()
-                    }
-                }) {
-                    Text("Delete")
+        DeleteConfirmationDialog(title = "Delete Service Log",
+            text = "Are you sure you want to delete this log?",
+            onConfirm = {
+                serviceLog?.let {
+                    serviceLogViewModel.deleteServiceLog(it)
+                    navController.popBackStack()
                 }
+                showDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel")
-                }
-            })
+            onDismiss = { showDialog = false })
     }
 }

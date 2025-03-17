@@ -38,7 +38,7 @@ fun AppNavHost(database: AppDatabase) {
         composable("service_log/{vehicleId}") { backStackEntry ->
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
             if (vehicleId != null) {
-                ServiceLogScreen(vehicleId, serviceLogViewModel, vehicleViewModel, navController)
+                ServiceLogScreen(vehicleId, serviceLogViewModel, navController)
             }
         }
         composable("service/{serviceId}/{vehicleId}") { backStackEntry ->
