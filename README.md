@@ -13,22 +13,22 @@ A simple Android app built with Jetpack Compose, Room, and MVVM architecture to 
   <summary>Click to expand</summary>
 
 ### Home Screen
-<img src="screenshots/home.png" alt="Home Screen" width="400">
+<img src="screenshots/home.png" alt="Home Screen" width="150">
 
 ### Add/Edit Vehicle Screen
-<img src="screenshots/add_vehicle.png" alt="Add/Edit Vehicle Screen" width="400">
+<img src="screenshots/add_vehicle.png" alt="Add/Edit Vehicle Screen" width="150">
 
 ### Vehicle Info Screen
-<img src="screenshots/vehicle_info.png" alt="Vehicle Info Screen" width="400">
+<img src="screenshots/vehicle_info.png" alt="Vehicle Info Screen" width="150">
 
 ### Vehicle Logs Screen
-<img src="screenshots/vehicle_logs.png" alt="Vehicle Logs Screen" width="400">
+<img src="screenshots/vehicle_logs.png" alt="Vehicle Logs Screen" width="150">
 
 ### Add/Edit Vehicle Log Screen
-<img src="screenshots/add_log.png" alt="Add/Edit Vehicle Log Screen" width="400">
+<img src="screenshots/add_log.png" alt="Add/Edit Vehicle Log Screen" width="150">
 
 ### Log Info Screen
-<img src="screenshots/log_info.png" alt="Log Info Screen" width="400">
+<img src="screenshots/log_info.png" alt="Log Info Screen" width="150">
 
 </details>
 
