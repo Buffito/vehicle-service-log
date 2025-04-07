@@ -16,7 +16,7 @@ import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewMode
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 
 @Composable
-fun AppNavHost(database: AppDatabase) {
+fun AppNavHost() {
     val vehicleViewModel: VehicleViewModel = hiltViewModel()
     val serviceLogViewModel: ServiceLogViewModel = hiltViewModel()
 

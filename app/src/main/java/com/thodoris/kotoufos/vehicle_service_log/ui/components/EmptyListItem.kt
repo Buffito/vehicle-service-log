@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EmptyListItem(modifier: Modifier = Modifier, text: String) {
+fun EmptyListItem(text: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()

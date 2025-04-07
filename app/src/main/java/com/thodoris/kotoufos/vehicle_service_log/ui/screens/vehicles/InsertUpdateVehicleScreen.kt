@@ -5,20 +5,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,12 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.thodoris.kotoufos.vehicle_service_log.data.models.Vehicle
 import com.thodoris.kotoufos.vehicle_service_log.ui.components.InputField
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsertUpdateVehicleScreen(
     vehicleId: Int, vehicleViewModel: VehicleViewModel, navController: NavHostController
@@ -58,26 +68,79 @@ fun InsertUpdateVehicleScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        TopAppBar(
+            title = {
+                Text(
+                    text = if (vehicleId == -1) "Add New Vehicle" else "Edit Vehicle",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        )
+    }, bottomBar = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding() + 16.dp,
+                    top = 8.dp
+                )
+        ) {
+            Button(
+                onClick = {
+                    if (make.isNotEmpty() && model.isNotEmpty() && licencePlate.isNotEmpty() && type.isNotEmpty()) {
+                        val newVehicle = Vehicle(
+                            id = if (vehicleId == -1) 0 else vehicleId,
+                            make = make,
+                            model = model,
+                            licencePlate = licencePlate,
+                            type = type
+                        )
+
+                        if (vehicleId == -1) {
+                            vehicleViewModel.insertVehicle(newVehicle)
+                        } else {
+                            vehicleViewModel.updateVehicle(newVehicle)
+                        }
+
+                        navController.popBackStack()
+                    }
+                },
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(48.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            ) {
+                Icon(
+                    imageVector = if (vehicleId == -1) Icons.Default.Add else Icons.Default.Create,
+                    contentDescription = if (vehicleId == -1) "Save Vehicle" else "Update Vehicle",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(if (vehicleId == -1) "Save Vehicle" else "Update Vehicle")
+            }
+        }
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = if (vehicleId == -1) "Add New Vehicle" else "Edit Vehicle",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-
             InputField(value = make, onValueChange = { make = it }, label = "Make")
             InputField(value = model, onValueChange = { model = it }, label = "Model")
             InputField(
-                value = licencePlate,
-                onValueChange = { licencePlate = it },
-                label = "Licence Plate"
+                value = licencePlate, onValueChange = { licencePlate = it }, label = "Licence Plate"
             )
 
             var expanded by remember { mutableStateOf(false) }
@@ -109,30 +172,6 @@ fun InsertUpdateVehicleScreen(
                         })
                     }
                 }
-            }
-
-            Button(
-                onClick = {
-                    if (make.isNotEmpty() && model.isNotEmpty() && licencePlate.isNotEmpty() && type.isNotEmpty()) {
-                        val newVehicle = Vehicle(
-                            id = if (vehicleId == -1) 0 else vehicleId,
-                            make = make,
-                            model = model,
-                            licencePlate = licencePlate,
-                            type = type
-                        )
-
-                        if (vehicleId == -1) {
-                            vehicleViewModel.insertVehicle(newVehicle)
-                        } else {
-                            vehicleViewModel.updateVehicle(newVehicle)
-                        }
-
-                        navController.popBackStack()
-                    }
-                }, modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (vehicleId == -1) "Save Vehicle" else "Update Vehicle")
             }
         }
     }
