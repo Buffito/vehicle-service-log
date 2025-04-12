@@ -1,34 +1,34 @@
 package com.thodoris.kotoufos.vehicle_service_log.ui.screens.logs
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,75 +44,62 @@ fun ServiceLogScreen(
 ) {
     val serviceLogs by viewModel.allServiceLogsForVehicle(vehicleId).collectAsState(emptyList())
 
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredServiceLogs = serviceLogs.filter {
-        it.date.contains(searchQuery, ignoreCase = true) || it.shop.contains(
-            searchQuery, ignoreCase = true
-        ) || it.description.contains(searchQuery, ignoreCase = true)
-    }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(
             title = {
-                SearchBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 10.dp),
-                    expanded = false,
-                    onExpandedChange = {},
-                    inputField = {
-                        SearchBarDefaults.InputField(modifier = Modifier.fillMaxWidth(),
-                            onSearch = { keyboardController?.hide() },
-                            placeholder = { Text("Search Log") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Search,
-                                    contentDescription = null
-                                )
-                            },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { searchQuery = "" }) {
-                                        Icon(
-                                            Icons.Default.Close,
-                                            contentDescription = "Clear search"
-                                        )
-                                    }
-                                }
-                            },
-                            query = searchQuery,
-                            onQueryChange = { searchQuery = it },
-                            expanded = false,
-                            onExpandedChange = {})
-                    },
-                    content = {},
-                    tonalElevation = 0.dp
+                Text(
+                    text = "Service Logs",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
                 )
-            },
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         )
-    }, floatingActionButton = {
-        FloatingActionButton(
-            onClick = { navController.navigate("service/-1/$vehicleId") },
-            containerColor = MaterialTheme.colorScheme.primary,
-            shape = CircleShape
+    }, bottomBar = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding() + 16.dp,
+                    top = 8.dp
+                )
         ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Service Log")
+            Button(
+                onClick = { navController.navigate("service/-1/$vehicleId") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(48.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Service Log",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Add Service Log")
+            }
         }
     }) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (filteredServiceLogs.isEmpty()) {
+            if (serviceLogs.isEmpty()) {
                 item {
                     EmptyListItem(text = "No service logs in list.")
                 }
             } else {
-                items(filteredServiceLogs) { log ->
+                items(serviceLogs) { log ->
                     ServiceLogItem(log = log) {
                         navController.navigate("service_info/${log.id}")
                     }

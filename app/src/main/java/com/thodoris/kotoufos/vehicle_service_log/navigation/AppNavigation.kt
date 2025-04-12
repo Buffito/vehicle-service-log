@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.thodoris.kotoufos.vehicle_service_log.data.database.AppDatabase
+import com.thodoris.kotoufos.vehicle_service_log.ui.screens.MainScreen
 import com.thodoris.kotoufos.vehicle_service_log.ui.screens.logs.InsertUpdateServiceScreen
 import com.thodoris.kotoufos.vehicle_service_log.ui.screens.logs.ServiceInfoScreen
 import com.thodoris.kotoufos.vehicle_service_log.ui.screens.logs.ServiceLogScreen
@@ -22,7 +23,8 @@ fun AppNavHost() {
 
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "main") {
-        composable("main") { VehiclesScreen(vehicleViewModel, navController) }
+        composable("main") { MainScreen(navController) }
+        composable("vehicles") { VehiclesScreen(vehicleViewModel, navController) }
         composable("vehicle/{vehicleId}") { backStackEntry ->
             val vehicleId = backStackEntry.arguments?.getString("vehicleId")?.toIntOrNull()
             if (vehicleId != null) {
