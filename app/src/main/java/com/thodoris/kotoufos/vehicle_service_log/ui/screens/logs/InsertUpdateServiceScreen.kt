@@ -6,17 +6,28 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.thodoris.kotoufos.vehicle_service_log.data.models.ServiceLog
 import com.thodoris.kotoufos.vehicle_service_log.ui.components.InputField
@@ -39,6 +49,7 @@ import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.ServiceLogViewMode
 import com.thodoris.kotoufos.vehicle_service_log.ui.viewmodel.VehicleViewModel
 import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun InsertUpdateServiceScreen(
     vehicleId: Int,
@@ -78,42 +89,33 @@ fun InsertUpdateServiceScreen(
         }
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = if (serviceId == -1) "Add Service for $vehicleText" else "Edit Service for $vehicleText",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+        TopAppBar(
+            title = {
+                Text(
+                    text = if (serviceId == -1) "Add Service for $vehicleText"
+                    else "Edit Service for $vehicleText",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primary
             )
-            Box(modifier = Modifier
+        )
+    }, bottomBar = {
+        Box(
+            modifier = Modifier
                 .fillMaxWidth()
-                .clickable { datePickerDialog.show() }
-                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-                .padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(serviceDate.ifEmpty { "Select Date" })
-                    Icon(imageVector = Icons.Default.DateRange, contentDescription = "Select Date")
-                }
-            }
-
-            InputField("Shop", shop) { shop = it }
-            InputField("Vehicle Mileage", vehicleMileage, KeyboardType.Number) {
-                vehicleMileage = it
-            }
-            InputField("Description", description, maxLines = 5, height = 150.dp) {
-                description = it
-            }
-
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding() + 16.dp,
+                    top = 8.dp
+                )
+        ) {
             Button(
                 onClick = {
                     if (serviceDate.isNotEmpty() && shop.isNotEmpty() && vehicleMileage.isNotEmpty()) {
@@ -131,11 +133,57 @@ fun InsertUpdateServiceScreen(
                         } else {
                             serviceLogViewModel.updateServiceLog(log)
                         }
+
                         navController.popBackStack()
                     }
-                }, modifier = Modifier.fillMaxWidth()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(48.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp)
             ) {
+                Icon(
+                    imageVector = if (serviceId == -1) Icons.Default.Add else Icons.Default.Create,
+                    contentDescription = if (serviceId == -1) "Save Log" else "Update Log",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
                 Text(if (serviceId == -1) "Save to Log" else "Update Log")
+            }
+        }
+    }) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .clickable { datePickerDialog.show() }
+                .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp))
+                .padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = serviceDate.ifEmpty { "Select Date" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.DarkGray
+                    )
+                    Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                }
+            }
+
+            InputField("Shop", shop) { shop = it }
+            InputField("Vehicle Mileage", vehicleMileage, KeyboardType.Number) {
+                vehicleMileage = it
+            }
+            InputField("Description", description, maxLines = 5, height = 150.dp) {
+                description = it
             }
         }
     }

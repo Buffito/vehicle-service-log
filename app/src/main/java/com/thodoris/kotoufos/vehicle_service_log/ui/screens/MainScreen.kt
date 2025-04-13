@@ -34,12 +34,9 @@ fun MainScreen(navController: NavHostController) {
         ) {
 
             Text(
-                text = "Vehicle Service Log",
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = contentColor
-                ),
-                modifier = Modifier.padding(bottom = 8.dp)
+                text = "Vehicle Service Log", style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold, color = contentColor
+                ), modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Button(

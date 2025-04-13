@@ -5,35 +5,36 @@ A simple Android app built with Jetpack Compose, Room, and MVVM architecture to 
 
 ## Features
 - Add, view, and update service logs for different vehicles.
-- Search by date, shop, or description.
-- Filter active vehicles.
 
 ## Screenshots
 <details>
   <summary>Click to expand</summary>
+  
+### Main Screen
+<p align="center">
+  <img src="screenshots/main_screen.png" alt="Main Screen" width="150">
+</p>
 
 ### Vehicle Screens
 <p align="center">
-  <img src="screenshots/main_empty.png" alt="Empty Main Screen" width="150">
-  <img src="screenshots/main_add_vehicle.png" alt="Add Vehicle Screen" width="150">
-  <img src="screenshots/main_add_vehicle_completed.png" alt="Add Vehicle Completed" width="150">
-  <img src="screenshots/main_not_empty.png" alt="Main Screen with Vehicles" width="150">
-  <img src="screenshots/main_search.png" alt="Search in Main Screen" width="150">
-  <img src="screenshots/vehicle_info.png" alt="Vehicle Info Screen" width="150">
-  <img src="screenshots/vehicle_info_edit.png" alt="Edit Vehicle Info" width="150">
-  <img src="screenshots/vehicle_info_delete.png" alt="Delete Vehicle Info" width="150">
+  <img src="screenshots/vehicle/vehicle_empty.png" alt="Vehicle Main Screen" width="150">
+  <img src="screenshots/vehicle/add_vehicle_empty.png" alt="Add Vehicle Screen" width="150">
+  <img src="screenshots/vehicle/add_vehicle_full.png" alt="Add Vehicle Completed" width="150">
+  <img src="screenshots/vehicle/vehicle_not_empty.png" alt="Vehicle Screen with Vehicles" width="150">
+  <img src="screenshots/vehicle/vehicle_info.png" alt="Vehicle Info Screen" width="150">
+  <img src="screenshots/vehicle/vehicle_update.png" alt="Edit Vehicle Info" width="150">
+  <img src="screenshots/vehicle/vehicle_delete.png" alt="Delete Vehicle Info" width="150">
 </p>
 
 ### Log Screens
 <p align="center">
-  <img src="screenshots/log_main.png" alt="Log Main Screen" width="150">
-  <img src="screenshots/log_add.png" alt="Add Log Screen" width="150">
-  <img src="screenshots/log_add_completed.png" alt="Add Log Completed" width="150">
-  <img src="screenshots/log_main_not_empty.png" alt="Log Screen with Entries" width="150">
-  <img src="screenshots/log_main_search.png" alt="Search in Logs" width="150">
-  <img src="screenshots/log_info.png" alt="Log Info Screen" width="150">
-  <img src="screenshots/log_info_edit.png" alt="Edit Log Info" width="150">
-  <img src="screenshots/log_info_delete.png" alt="Delete Log Info" width="150">
+  <img src="screenshots/service_log/log_empty.png" alt="Log Main Screen" width="150">
+  <img src="screenshots/service_log/add_log_empty.png" alt="Add Log Screen" width="150">
+  <img src="screenshots/service_log/add_log_not_empty.png" alt="Add Log Completed" width="150">
+  <img src="screenshots/service_log/log_not_empty.png" alt="Log Screen with Entries" width="150">
+  <img src="screenshots/service_log/log_info.png" alt="Log Info Screen" width="150">
+  <img src="screenshots/service_log/log_update.png" alt="Edit Log Info" width="150">
+  <img src="screenshots/service_log/log_delete.png" alt="Delete Log Info" width="150">
 </p>
 
 </details>
@@ -48,7 +49,6 @@ git clone https://github.com/Buffito/vehicle-service-log.git
 
 ## Usage
 - Navigate to the "Vehicle List" to view and manage vehicles.
-- Use the search bar to filter service logs.
 - Tap on a log for detailed information.
 
 ## Architecture
